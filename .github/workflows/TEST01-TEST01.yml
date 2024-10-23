@@ -1,0 +1,48 @@
+name: Test01
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '*/3 * * * *' # Every 3 hours, equivalent to Bamboo polling period of 180 minutes
+
+jobs:
+  default_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Default Repository
+        uses: actions/checkout@v2
+
+  spring:
+    runs-on: ubuntu-latest
+    container:
+      image: spring
+    steps:
+      - name: Checkout Default Repository
+        uses: actions/checkout@v2
+      - name: Setup JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+      - name: Setup Maven
+        uses: actions/setup-java@v2
+        with:
+          maven-version: 3
+      - name: Maven Build
+        run: mvn clean test
+      # Bamboo VCS commit task does not have a direct equivalent in GitHub Actions
+      # Consider using a custom script or GitHub API for committing changes
+      # Uncomment and modify the script below as needed
+      # - name: Repository Commit
+      #   run: |
+      #     git config --global user.email "you@example.com"
+      #     git config --global user.name "Your Name"
+      #     git commit -m 'test'
+
+    # Final tasks can be executed in a separate step or job
+    # Note that GitHub Actions does not have a direct equivalent for final tasks
+    # Consider using a separate 'post' job or script if needed
+
+# GitHub does not directly support Bamboo's plan permissions
+# Manage repository access via GitHub settings
