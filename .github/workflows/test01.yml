@@ -1,0 +1,47 @@
+name: test01/test01
+on:
+#   # The shortest interval you can run scheduled workflows is once every 5 minutes.
+#   period: '180'
+jobs:
+  Default-Stage-Default-Job:
+    runs-on: ubuntu-latest
+    container:
+      image: spring
+      volumes:
+      - "${{ env.working_directory }}:${{ env.working_directory }}"
+      - "${{ env.tmp_directory }}:${{ env.tmp_directory }}"
+    steps:
+    - uses: actions/checkout@v4.1.0
+      with:
+        clean: false
+  Default-Stage-Spring:
+    runs-on:
+      - self-hosted
+      - Git
+      - system.builder.mvn3.Maven 3
+    container:
+      image: spring
+      volumes:
+      - "${{ env.working_directory }}:${{ env.working_directory }}"
+      - "${{ env.tmp_directory }}:${{ env.tmp_directory }}"
+    steps:
+    - uses: actions/setup-java@v4.0.0
+      with:
+        distribution: zulu
+        java-version: '11'
+    - name: Run Maven
+      run: mvn clean test
+    - name: Publish test results
+      uses: EnricoMi/publish-unit-test-result-action@v2.12.0
+      if: always()
+      with:
+        junit_files: "**/target/surefire-reports/*.xml"
+    - name: repository commit
+      run: |-
+        git add .
+        git commit -m "test"
+        git push origin HEAD
+    - uses: actions/checkout@v4.1.0
+      with:
+        clean: false
+      if: always()
